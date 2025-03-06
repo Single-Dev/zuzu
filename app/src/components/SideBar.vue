@@ -52,7 +52,8 @@ import {
     Heart,
     PartyPopper ,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    BookOpenCheck
 } from 'lucide-vue-next';
 
 const isCollapsed = ref(false);
@@ -74,6 +75,12 @@ const menuItems = ref([
         title: 'Til now',
         icon: Infinity ,
         path: '/countup',
+        active: false
+    },
+    {
+        title: 'About us',
+        icon: BookOpenCheck ,
+        path: '/about',
         active: false
     }
 ]);
