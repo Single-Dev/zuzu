@@ -3,6 +3,7 @@
         <div class="countup-header">
             <h1>We are dating for:</h1>
             <p class="subtitle">Counting every moment since the  our journey began</p>
+            <p>This doen't stop counting which means <b>we never break up</b> it counties counting that we are dating!</p>
         </div>
 
         <div class="countup-timer">
@@ -38,6 +39,7 @@
                         {{ milestone.days <= parseInt(timePassed.days) ? 'Reached!' : 'Coming soon' }} </div>
                     </div>
                 </div>
+                <p>Much more...</p>
             </div>
 
             <div class="countup-footer">
@@ -55,7 +57,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Moon, Sun } from 'lucide-vue-next';
 
 // Start date: May 22nd, 2024
-const startDate = new Date('2024-05-22T00:00:00');
+const startDate = new Date('2024-05-22T15:03:15');
 const now = ref(new Date());
 const isDarkMode = ref(false);
 const intervalId = ref(null);
@@ -83,7 +85,7 @@ const timePassed = computed(() => {
 const milestones = [
     { days: 7, title: 'First Week' },
     { days: 30, title: 'First Month' },
-    { days: 100, title: '100 Days' },
+    { days: 180, title: 'Six Month' },
     { days: 365, title: 'One Year' },
     { days: 730, title: 'Two Years' },
     { days: 1825, title: 'Five Years' }

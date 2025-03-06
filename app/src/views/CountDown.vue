@@ -3,6 +3,7 @@
         <div class="countdown-header">
             <h1>Countdown to your birthday</h1>
             <p class="subtitle">Time remaining until next birthday (it automatically counts down to next birthday)</p>
+            <p>This never stop counting down to your birthday <b>wishing that long life to you :)</b></p>
         </div>
 
         <div class="countdown-timer">
