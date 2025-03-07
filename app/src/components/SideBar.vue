@@ -1,348 +1,479 @@
 <template>
-    <aside :class="['sidebar', { 'sidebar--collapsed': isCollapsed }]">
-        <!-- Sidebar Header -->
-        <div class="sidebar__header">
-            <div class="sidebar__logo">
-                <heart />
-                <span v-show="!isCollapsed">Zara F. Hanin</span>
-            </div>
-            <button class="sidebar__toggle" @click="toggleSidebar">
-                <chevron-left v-if="!isCollapsed" />
-                <chevron-right v-else />
-            </button>
-        </div>
+    <div class="sidebar-wrapper" :class="{ 'mobile-open': isMobileOpen, 'dark-mode': isDarkMode }">
+        <!-- Overlay for mobile -->
+        <div class="sidebar-overlay" v-if="isMobile" @click="toggleMobile" :class="{ 'show': isMobileOpen }"></div>
 
-        <!-- Sidebar Content -->
-        <div class="sidebar__content">
-            <!-- Main Navigation -->
-            <nav class="sidebar__nav">
-                <ul class="sidebar__menu">
-                    <li v-for="(item, index) in menuItems" :key="index" class="sidebar__menu-item">
-                        <router-link :to="item.path">
-                            <div :class="['sidebar__menu-button', { 'active': item.active }]">
-                                <component :is="item.icon" class="sidebar__icon" />
-                                <span v-show="!isCollapsed">{{ item.title }}</span>
-                            </div>
-                        </router-link>
-                    </li>
-                </ul>
-            </nav>
-        </div>
+        <!-- Mobile toggle button -->
+        <button v-if="isMobile" class="mobile-toggle" :class="{ 'open': isMobileOpen }" @click="toggleMobile">
+            <span class="hamburger"></span>
+        </button>
 
-        <!-- Sidebar Footer -->
-        <div class="sidebar__footer">
-            <div class="sidebar__user" v-show="!isCollapsed">
-                <user class="sidebar__user-icon" />
-                <div class="sidebar__user-info">
-                    <span class="sidebar__user-name">Anonym</span>
-                    <span class="sidebar__user-role">User</span>
+        <!-- Sidebar -->
+        <aside class="sidebar" :class="{ 'collapsed': isCollapsed && !isMobile }">
+            <!-- Header -->
+            <div class="sidebar-header">
+                <div class="header-content">
+                    <Heart class="icon heart-icon" />
+                    <span class="title">Zara F. Hanin</span>
                 </div>
+                <button class="collapse-btn" @click="toggleCollapse" v-if="!isMobile">
+                    <ChevronLeft :class="{ 'rotate-180': isCollapsed }" />
+                </button>
             </div>
-            <settings v-show="isCollapsed" class="sidebar__icon" />
-        </div>
-    </aside>
+
+            <!-- Navigation -->
+            <nav class="sidebar-nav">
+                <router-link to="/" class="nav-item" active-class="active">
+                    <Home class="icon" />
+                    <span class="nav-text">Home</span>
+                </router-link>
+
+                <router-link to="/birthday" class="nav-item" active-class="active">
+                    <Gift class="icon" />
+                    <span class="nav-text">Until your birthday</span>
+                </router-link>
+
+                <router-link to="/timeline" class="nav-item" active-class="active">
+                    <Infinity class="icon" />
+                    <span class="nav-text">Til now</span>
+                </router-link>
+
+                <router-link to="/about" class="nav-item" active-class="active">
+                    <Info class="icon" />
+                    <span class="nav-text">About us</span>
+                </router-link>
+
+                <router-link to="/player" class="nav-item" active-class="active">
+                    <Music4  class="icon" />
+                    <span class="nav-text">Player</span>
+                </router-link>
+            </nav>
+
+            <!-- Footer -->
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <User class="icon user-icon" />
+                    <div class="user-info">
+                        <span class="username">Anonym</span>
+                        <span class="user-role">User</span>
+                    </div>
+                </div>
+                <!-- Dark mode toggle -->
+                <!-- <button class="dark-mode-toggle" @click="toggleDarkMode">
+                    <Sun v-if="isDarkMode" class="icon" />
+                    <Moon v-else class="icon" />
+                    <span>{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+                </button> -->
+            </div>
+        </aside>
+    </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted, watch } from 'vue';
 import {
-    Home,
-    Infinity ,
-    User,
     Heart,
-    PartyPopper ,
+    Home,
+    Gift,
+    Infinity,
+    Info,
+    User,
     ChevronLeft,
-    ChevronRight,
-    BookOpenCheck
+    Sun,
+    Moon,
+    Music4
 } from 'lucide-vue-next';
 
 const isCollapsed = ref(false);
+const isMobile = ref(false);
+const isMobileOpen = ref(false);
+const isDarkMode = ref(true); // Start with dark mode by default
 
-const menuItems = ref([
-    {
-        title: 'Home',
-        icon: Home,
-        path: '/',
-        active: false
-    },
-    {
-        title: 'Until your birthday',
-        icon: PartyPopper ,
-        path: '/countdown',
-        active: false
-    },
-    {
-        title: 'Til now',
-        icon: Infinity ,
-        path: '/countup',
-        active: false
-    },
-    {
-        title: 'About us',
-        icon: BookOpenCheck ,
-        path: '/about',
-        active: false
-    }
-]);
-
-const toggleSidebar = () => {
+const toggleCollapse = () => {
     isCollapsed.value = !isCollapsed.value;
 };
 
-const toggleSubmenu = (index) => {
-    menuItems.value[index].expanded = !menuItems.value[index].expanded;
+const toggleMobile = () => {
+    isMobileOpen.value = !isMobileOpen.value;
+    if (isMobileOpen.value) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
 };
 
-const navigateTo = (path) => {
-    // Implementation would depend on your routing solution
-    console.log(`Navigating to ${path}`);
-
-    // Update active state (simplified implementation)
-    menuItems.value.forEach(item => {
-        item.active = item.path === path;
-        if (item.children) {
-            item.children.forEach(child => {
-                child.active = child.path === path;
-                if (child.active) {
-                    item.expanded = true;
-                }
-            });
-        }
-    });
+const toggleDarkMode = () => {
+    isDarkMode.value = !isDarkMode.value;
+    updateDarkMode();
 };
+
+const updateDarkMode = () => {
+    if (isDarkMode.value) {
+        document.documentElement.classList.add('dark-mode');
+    } else {
+        document.documentElement.classList.remove('dark-mode');
+    }
+};
+
+const checkMobile = () => {
+    isMobile.value = window.innerWidth < 768;
+    if (!isMobile.value && isMobileOpen.value) {
+        isMobileOpen.value = false;
+        document.body.style.overflow = '';
+    }
+};
+
+onMounted(() => {
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    updateDarkMode();
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile);
+});
+
+watch(isDarkMode, updateDarkMode);
 </script>
 
-<style>
-:root {
-    --sidebar-width: 260px;
-    --sidebar-collapsed-width: 64px;
-    --sidebar-bg: #ffffff;
-    --sidebar-border: #e2e8f0;
-    --sidebar-color: #334155;
-    --sidebar-hover-bg: #f8fafc;
-    --sidebar-active-bg: #f1f5f9;
-    --sidebar-active-color: #0f172a;
-    --sidebar-icon-color: #64748b;
-    --primary-color: #3b82f6;
-    --transition-speed: 0.3s;
+<style scoped>
+.sidebar-wrapper {
+    position: relative;
+    height: 100%;
 }
 
 .sidebar {
+    width: 260px;
+    height: 100vh;
+    background-color: #0f172a;
+    color: #fff;
     display: flex;
     flex-direction: column;
-    width: var(--sidebar-width);
-    height: auto;
-    background-color: var(--sidebar-bg);
-    border-right: 1px solid var(--sidebar-border);
-    transition: width var(--transition-speed) ease;
-    overflow: hidden;
-    position: relative;
+    transition: all 0.3s ease;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
 }
 
-.sidebar--collapsed {
-    width: var(--sidebar-collapsed-width);
+.sidebar.collapsed {
+    width: 80px;
 }
 
-.sidebar__header {
+/* Header styles */
+.sidebar-header {
+    padding: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px;
-    height: 64px;
-    border-bottom: 1px solid var(--sidebar-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.sidebar__logo {
+.header-content {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-weight: 600;
-    font-size: 18px;
-    color: var(--sidebar-active-color);
+    gap: 0.75rem;
 }
 
-.sidebar__toggle {
+.heart-icon {
+    color: #10b981;
+}
+
+.title {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    padding: 0.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 4px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
-    color: var(--sidebar-icon-color);
+    transition: transform 0.3s ease;
 }
 
-.sidebar__toggle:hover {
-    background-color: var(--sidebar-hover-bg);
-}
-
-.sidebar__content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 12px 0;
-}
-
-.sidebar__menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.sidebar__menu-item {
-    margin: 4px 0;
-}
-
-.sidebar__menu-button {
-    display: flex;
-    align-items: center;
-    padding: 10px 16px;
-    border-radius: 6px;
-    margin: 0 8px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    color: var(--sidebar-color);
-    gap: 12px;
-}
-
-.sidebar__menu-button:hover {
-    background-color: var(--sidebar-hover-bg);
-}
-
-.sidebar__menu-button.active {
-    background-color: var(--sidebar-active-bg);
-    color: var(--sidebar-active-color);
-    font-weight: 500;
-}
-
-.sidebar__icon {
-    width: 20px;
-    height: 20px;
-    color: var(--sidebar-icon-color);
-    flex-shrink: 0;
-}
-
-.sidebar__menu-button.active .sidebar__icon {
-    color: var(--primary-color);
-}
-
-.sidebar__dropdown-icon {
-    margin-left: auto;
-    width: 16px;
-    height: 16px;
-    transition: transform 0.2s ease;
-}
-
-.sidebar__dropdown-icon.rotate {
+.rotate-180 {
     transform: rotate(180deg);
 }
 
-.sidebar__submenu {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 0 32px;
+/* Navigation styles */
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.sidebar__submenu-item {
-    margin: 2px 0;
-}
-
-.sidebar__submenu-link {
-    display: block;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    color: var(--sidebar-color);
-    font-size: 14px;
-}
-
-.sidebar__submenu-link:hover {
-    background-color: var(--sidebar-hover-bg);
-}
-
-.sidebar__submenu-link.active {
-    color: var(--primary-color);
-    font-weight: 500;
-}
-
-.sidebar__footer {
-    padding: 16px;
-    border-top: 1px solid var(--sidebar-border);
+.nav-item {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
 }
 
-.sidebar__user {
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.nav-item.active {
+    background-color: #10b981;
+    color: #fff;
+}
+
+.icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+}
+
+/* Footer styles */
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-profile {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
 }
 
-.sidebar__user-icon {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
+.user-icon {
+    background-color: #10b981;
+    padding: 0.5rem;
     border-radius: 50%;
-    background-color: var(--sidebar-active-bg);
-    color: var(--primary-color);
 }
 
-.sidebar__user-info {
+.user-info {
     display: flex;
     flex-direction: column;
 }
 
-.sidebar__user-name {
-    font-weight: 500;
-    font-size: 14px;
-    color: var(--sidebar-active-color);
+.username {
+    font-weight: 600;
+    font-size: 0.9rem;
 }
 
-.sidebar__user-role {
-    font-size: 12px;
-    color: var(--sidebar-icon-color);
+.user-role {
+    font-size: 0.8rem;
+    color: #94a3b8;
 }
 
-/* Submenu transition */
-.submenu-enter-active,
-.submenu-leave-active {
-    transition: max-height var(--transition-speed) ease, opacity var(--transition-speed) ease;
-    max-height: 500px;
-    overflow: hidden;
+/* Dark mode toggle */
+.dark-mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 1px solid var(--toggle-border);
+    color: var(--toggle-text);
+    cursor: pointer;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border-radius: 0.5rem;
+    width: 100%;
+    justify-content: center;
 }
 
-.submenu-enter-from,
-.submenu-leave-to {
-    max-height: 0;
+.dark-mode-toggle:hover {
+    background-color: var(--toggle-hover);
+}
+
+.dark-mode-toggle .icon {
+    color: var(--toggle-icon);
+}
+
+/* Collapsed state styles */
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .title,
+.sidebar.collapsed .dark-mode-toggle span {
+    display: none;
+}
+
+/* Mobile styles */
+.mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1001;
+    background: #0f172a;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.hamburger {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: #fff;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.hamburger::before,
+.hamburger::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: #fff;
+    transition: all 0.3s ease;
+}
+
+.hamburger::before {
+    top: -6px;
+}
+
+.hamburger::after {
+    bottom: -6px;
+}
+
+.mobile-toggle.open .hamburger {
+    background: white;
+}
+
+.mobile-toggle.open .hamburger::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.mobile-toggle.open .hamburger::after {
+    transform: rotate(-45deg);
+    bottom: 0;
+}
+
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
     opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Add dark mode support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --sidebar-bg: #0f172a;
-        --sidebar-border: #1e293b;
-        --sidebar-color: #cbd5e1;
-        --sidebar-hover-bg: #1e293b;
-        --sidebar-active-bg: #1e293b;
-        --sidebar-active-color: #ffffff;
-        --sidebar-icon-color: #94a3b8;
-    }
-}
-
-/* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .sidebar {
-        position: fixed;
-        z-index: 100;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        transform: translateX(-100%);
+    }
+
+    .mobile-toggle {
+        display: block;
+    }
+
+    .sidebar-overlay {
+        display: block;
+    }
+
+    .sidebar-overlay.show {
+        opacity: 1;
+    }
+
+    .mobile-open .sidebar {
         transform: translateX(0);
     }
 
-    .sidebar--collapsed {
-        transform: translateX(calc(-1 * var(--sidebar-width)));
+    .sidebar.collapsed {
+        width: 260px;
     }
+
+    .sidebar.collapsed .nav-text,
+    .sidebar.collapsed .user-info,
+    .sidebar.collapsed .title,
+    .sidebar.collapsed .dark-mode-toggle span {
+        display: block;
+    }
+}
+
+/* Animation for mobile menu */
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* Light mode styles */
+:root {
+    --bg-color: #ffffff;
+    --text-color: #333333;
+    --sidebar-bg: #f0f0f0;
+    --sidebar-text: #333333;
+    --sidebar-hover: #e0e0e0;
+    --sidebar-active: #10b981;
+    --toggle-border: #d1d5db;
+    --toggle-text: #4b5563;
+    --toggle-icon: #4b5563;
+    --toggle-hover: #e5e7eb;
+}
+
+/* Dark mode styles */
+.dark-mode {
+    --bg-color: #0f172a;
+    --text-color: #ffffff;
+    --sidebar-bg: #1e293b;
+    --sidebar-text: #ffffff;
+    --sidebar-hover: #2d3748;
+    --sidebar-active: #10b981;
+    --toggle-border: #4b5563;
+    --toggle-text: #e5e7eb;
+    --toggle-icon: #e5e7eb;
+    --toggle-hover: #374151;
+}
+
+/* Apply variables */
+.sidebar-wrapper {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.sidebar {
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+}
+
+.nav-item {
+    color: var(--sidebar-text);
+}
+
+.nav-item:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.nav-item.active {
+    background-color: var(--sidebar-active);
+    color: #ffffff;
 }
 </style>
