@@ -1,7 +1,7 @@
 <template>
     <div class="sidebar-wrapper" :class="{ 'mobile-open': isMobileOpen, 'dark-mode': isDarkMode }">
         <!-- Overlay for mobile -->
-        <div class="sidebar-overlay" v-if="isMobile" @click="toggleMobile" :class="{ 'show': isMobileOpen }"></div>
+        <!-- <div class="sidebar-overlay" v-if="isMobile" @click="toggleMobile" :class="{ 'show': isMobileOpen }"></div> -->
 
         <!-- Mobile toggle button -->
         <button v-if="isMobile" class="mobile-toggle" :class="{ 'open': isMobileOpen }" @click="toggleMobile">
