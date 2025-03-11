@@ -3,7 +3,7 @@
       <div v-if="!isFullScreen" class="welcome-content">
         <div class="welcome-header">
           <h1>Welcome to Zara Hainin's website</h1>
-          <p class="subtitle">I would give you unexpected gift if we were together but since we are far I decided to create a site for you. This site gets major updates every single birthday as included gift.</p>
+          <p class="subtitle">I would give you unexpected gift if we were together but since we are far I decided to create a site for you.</p>
         </div>
         
         <div class="info-cards">
@@ -47,11 +47,11 @@
       </div>
       
       <div v-if="!isFullScreen" class="welcome-footer">
-        <button class="toggle-button" @click="toggleTheme">
+        <!-- <button class="toggle-button" @click="toggleTheme">
           <moon-icon v-if="isDarkMode" />
           <sun-icon v-else />
           {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
-        </button>
+        </button> -->
       </div>
     </div>
   </template>

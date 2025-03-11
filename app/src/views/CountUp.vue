@@ -43,11 +43,11 @@
             </div>
 
             <div class="countup-footer">
-                <button class="toggle-button" @click="toggleTheme">
+                <!-- <button class="toggle-button" @click="toggleTheme">
                     <moon v-if="isDarkMode" />
                     <sun v-else />
                     {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
-                </button>
+                </button> -->
             </div>
         </div>
 </template>
@@ -86,9 +86,14 @@ const milestones = [
     { days: 7, title: 'First Week' },
     { days: 30, title: 'First Month' },
     { days: 180, title: 'Six Month' },
-    { days: 365, title: 'One Year' },
+    { days: 365, title: 'First Year' },
     { days: 730, title: 'Two Years' },
-    { days: 1825, title: 'Five Years' }
+    { days: 1825, title: 'Five Years' },
+    { days: 3650, title: 'Ten Years' },
+    { days: 7300, title: 'Twenty Years' },
+    { days: 14600, title: 'Fourty Years' },
+    { days: 29200, title: 'Seventy Years' },
+    { days: 58400, title: 'One hundred and Sixty Years' },
 ];
 
 // Toggle between light and dark mode

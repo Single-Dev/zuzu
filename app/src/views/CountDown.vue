@@ -29,16 +29,16 @@
         </div>
 
         <div v-if="isExpired" class="expired-message">
-            <h2>The date has arrived!</h2>
-            <p>April 25th, 2025 is here</p>
+            <h2>Finally, today</h2>
+            <p>Congarts, I wish long and happy life with me :)</p>
         </div>
 
         <div class="countdown-footer">
-            <button class="toggle-button" @click="toggleTheme">
+            <!-- <button class="toggle-button" @click="toggleTheme">
                 <moon v-if="isDarkMode" />
                 <sun v-else />
                 {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
-            </button>
+            </button> -->
         </div>
     </div>
 </template>
@@ -47,18 +47,35 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { Moon, Sun } from 'lucide-vue-next';
 
-// Target date: April 25th, 2025
-const targetDate = new Date('2025-04-25T00:00:00');
+const getNextBirthday = () => {
+  const now = new Date();
+  const birthdayMonth = 3; // For March (0-indexed, so 3 = March)
+  const birthdayDay = 25; // 10th March
+
+  // Get the current year
+  let nextBirthdayYear = now.getFullYear();
+
+  // If the birthday has already passed this year, set the next birthday to next year
+  if (now.getMonth() > birthdayMonth || (now.getMonth() === birthdayMonth && now.getDate() > birthdayDay)) {
+    nextBirthdayYear += 1;
+  }
+
+  // Return the next birthday date
+  return new Date(nextBirthdayYear, birthdayMonth, birthdayDay);
+};
+
+// Define the target date based on the next birthday
+const targetDate = ref(getNextBirthday());
 const now = ref(new Date());
-const isDarkMode = ref(false);
 const intervalId = ref(null);
 
 // Calculate time left
 const timeLeft = computed(() => {
-    const difference = targetDate - now.value;
+    const difference = targetDate.value - now.value;
 
-    // If the countdown is over
+    // If the countdown is over (it's the target date or past)
     if (difference <= 0) {
+        targetDate.value = getNextBirthday(); // Update to next year's birthday once expired
         return {
             days: '00',
             hours: '00',
@@ -82,25 +99,13 @@ const timeLeft = computed(() => {
     };
 });
 
-// Check if countdown has expired
+// Check if countdown has expired (target date has passed or is today)
 const isExpired = computed(() => {
-    return targetDate - now.value <= 0;
+    return targetDate.value <= now.value;
 });
-
-// Toggle between light and dark mode
-const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value;
-    document.body.classList.toggle('dark-mode', isDarkMode.value);
-};
 
 // Update the current time every second
 onMounted(() => {
-    // Check if user prefers dark mode
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        isDarkMode.value = true;
-        document.body.classList.add('dark-mode');
-    }
-
     intervalId.value = setInterval(() => {
         now.value = new Date();
     }, 1000);
@@ -112,6 +117,7 @@ onBeforeUnmount(() => {
         clearInterval(intervalId.value);
     }
 });
+
 </script>
 
 <style>

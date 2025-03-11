@@ -10,13 +10,13 @@
         </div>
 
 
-        <div class="welcome-footer">
+        <!-- <div class="welcome-footer">
             <button class="toggle-button" @click="toggleTheme">
                 <moon-icon v-if="isDarkMode" />
                 <sun-icon v-else />
                 {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
             </button>
-        </div>
+        </div> -->
     </div>
 </template>
 
