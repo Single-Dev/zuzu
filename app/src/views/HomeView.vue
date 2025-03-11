@@ -43,6 +43,7 @@
           <minimize-icon />
           Exit Full Screen
         </button>
+        <p>if it isn't working just open <a href="https://gifft.me/o/d/lp28ygt9k6s8w7n0fqqoc3f6">this site <b>(click to visit)</b></a> and come back here </p>
       </div>
       
       <div v-if="!isFullScreen" class="welcome-footer">
@@ -140,6 +141,9 @@
   .subtitle {
     font-size: 1.2rem;
     color: var(--text-secondary);
+    width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .info-cards {
@@ -172,7 +176,7 @@
   }
   
   .info-card h2 {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     margin-bottom: 0.5rem;
     color: var(--primary-color);
   }
@@ -207,7 +211,7 @@
   }
   
   .iframe-header h2 {
-    font-size: 2rem;
+    font-size: 1.3rem;
     color: var(--primary-color);
     margin: 0;
   }
@@ -303,6 +307,10 @@
       font-size: 2rem;
     }
     
+    .subtitle{
+      width: 250px;
+    }
+
     .info-card {
       width: 100%;
       max-width: 300px;

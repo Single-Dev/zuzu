@@ -23,27 +23,27 @@
 
             <!-- Navigation -->
             <nav class="sidebar-nav">
-                <router-link to="/" class="nav-item" active-class="active">
+                <router-link to="/" class="nav-item" active-class="active" @click="toggleMobile">
                     <Home class="icon" />
                     <span class="nav-text">Home</span>
                 </router-link>
 
-                <router-link to="/birthday" class="nav-item" active-class="active">
+                <router-link to="/birthday" class="nav-item" active-class="active" @click="toggleMobile">
                     <Gift class="icon" />
                     <span class="nav-text">Until your birthday</span>
                 </router-link>
 
-                <router-link to="/timeline" class="nav-item" active-class="active">
+                <router-link to="/timeline" class="nav-item" active-class="active" @click="toggleMobile">
                     <Infinity class="icon" />
                     <span class="nav-text">Til now</span>
                 </router-link>
 
-                <router-link to="/about" class="nav-item" active-class="active">
+                <router-link to="/about" class="nav-item" active-class="active" @click="toggleMobile">
                     <Info class="icon" />
                     <span class="nav-text">About us</span>
                 </router-link>
 
-                <router-link to="/player" class="nav-item" active-class="active">
+                <router-link to="/player" class="nav-item" active-class="active" @click="toggleMobile">
                     <Music4  class="icon" />
                     <span class="nav-text">Player</span>
                 </router-link>
