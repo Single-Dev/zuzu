@@ -48,7 +48,7 @@
 
         <!-- Hidden audio element -->
         <audio ref="audioRef" @timeupdate="updateTime" @loadedmetadata="setDuration">
-            <source src="../assets/music.mp3" type="audio/mpeg">
+            <source src="https://drive.google.com/file/d/1HGUve7qCIHSyvHNA8FzvmkcvOorL8M8s/view" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
     </div>

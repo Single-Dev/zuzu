@@ -38,14 +38,19 @@
                     <span class="nav-text">Til now</span>
                 </router-link>
 
-                <router-link to="/about" class="nav-item" active-class="active" @click="toggleMobile">
-                    <Info class="icon" />
-                    <span class="nav-text">About us</span>
-                </router-link>
-
                 <router-link to="/player" class="nav-item" active-class="active" @click="toggleMobile">
                     <Music4  class="icon" />
                     <span class="nav-text">Player</span>
+                </router-link>
+
+                <router-link to="/comments" class="nav-item" active-class="active" @click="toggleMobile">
+                    <MessagesSquare class="icon" />
+                    <span class="nav-text">Discussion</span>
+                </router-link>
+
+                <router-link to="/about" class="nav-item" active-class="active" @click="toggleMobile">
+                    <Info class="icon" />
+                    <span class="nav-text">About us</span>
                 </router-link>
             </nav>
 
@@ -81,7 +86,8 @@ import {
     ChevronLeft,
     Sun,
     Moon,
-    Music4
+    Music4,
+    MessagesSquare 
 } from 'lucide-vue-next';
 
 const isCollapsed = ref(false);
