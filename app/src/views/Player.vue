@@ -48,7 +48,7 @@
 
         <!-- Hidden audio element -->
         <audio ref="audioRef" @timeupdate="updateTime" @loadedmetadata="setDuration">
-            <source src="https://drive.google.com/file/d/1HGUve7qCIHSyvHNA8FzvmkcvOorL8M8s/view" type="audio/mpeg">
+            <source src="../assets/music.mp3" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
     </div>
@@ -66,35 +66,51 @@ export default {
             lyrics: [
                 { time: 0, text: "I want you to stay" },
                 { time: 5, text: "Till I'm in the grave" },
-                { time: 10, text: "Till I rot away, dead and buried" },
-                { time: 15, text: "Till I'm in the casket you carry" },
-                { time: 20, text: "If you go, I'm going too, uh" },
+                { time: 12, text: "Till I rot away, dead and buried" },
+                { time: 17, text: "Till I'm in the casket you carry" },
+                { time: 21, text: "If you go, I'm going too, uh" },
                 { time: 25, text: "Cause it was always you, alright" },
-                { time: 30, text: "The sky isn't falling, I hear your voice calling" },
-                { time: 35, text: "We'll rise above it all" },
-                { time: 40, text: "Birds of a feather, fly together" },
-                { time: 45, text: "Through stormy weather, we won't surrender" },
-                { time: 50, text: "You and I, we're birds of a feather" },
-                { time: 55, text: "We'll soar together, now and forever" },
-                { time: 60, text: "When the wind blows hard, and the clouds turn dark" },
-                { time: 65, text: "We'll find our way back to the light" },
-                { time: 70, text: "With our wings spread wide, we'll take to the sky" },
-                { time: 75, text: "And leave all our troubles behind" },
-                { time: 80, text: "Birds of a feather, fly together" },
-                { time: 85, text: "We'll brave any weather, light as a feather" },
-                { time: 90, text: "You and I, we're birds of a feather" },
-                { time: 95, text: "We'll fly forever, now and forever" },
-                { time: 100, text: "When the world tries to clip our wings" },
-                { time: 105, text: "We'll show them what freedom brings" },
-                { time: 110, text: "With every beat of our hearts, we'll fly" },
-                { time: 115, text: "Higher and higher into the sky" },
-                { time: 120, text: "Birds of a feather, fly together" },
-                { time: 125, text: "We'll stay the same, no matter the weather" },
-                { time: 130, text: "You and I, we're birds of a feather" },
-                { time: 135, text: "We'll stick together, now and forever" },
-                { time: 140, text: "Now and forever" },
-                { time: 145, text: "We'll fly together" },
-                { time: 150, text: "Birds of a feather" },
+                { time: 30, text: "And if I'm turning blue, please, don't save me" },
+                { time: 35, text: "Nothing left to lose without my baby" },
+                { time: 40, text: "Birds of a feather, we should stick together" },
+                { time: 45, text: "I know I said I'd never think I wasn't better alone" },
+                { time: 50, text: "Can't change the weather, might not be forever" },
+                { time: 55, text: "But if it's forever, it's even better" },
+                { time: 60, text: "And I don't know what I'm crying for" },
+                { time: 65, text: "I don't think I could love you more" },
+                { time: 70, text: "It might not be long, but, baby, I" },
+                { time: 75, text: "I'll love you till the day that I die" },
+                { time: 80, text: "Till the day that I die" },
+                { time: 85, text: "Till the light leaves my eyes" },
+                { time: 90, text: "Till the day that I die" },
+                { time: 95, text: "I want you to see, mmm" },
+                { time: 99, text: "How you look to me, huh" },
+                { time: 104, text: "You wouldn't believe if I told ya" },
+                { time: 108, text: "You would keep the compliments I throw ya" },
+                { time: 113, text: "But you're so full of shit, hmm" },
+                { time: 118, text: "Tell me it's a bit, oh" },
+                { time: 122, text: "Say you don't see it, your mind's polluted" },
+                { time: 127, text: "Say you wanna quit, don't be stupid" },
+                { time: 131, text: "And I don't know what I'm crying for" },
+                { time: 138, text: "I don't think I could love you more" },
+                { time: 142, text: "It might not be long, but, baby, I" },
+                { time: 148, text: "Don't wanna say goodbye" },
+                { time: 152, text: "till the day that I die" },
+                { time: 157, text: "till the light leaves my eyes" },
+                { time: 163, text: "till the day that I die" },
+                { time: 165, text: "But if it's forever, it's even better" },
+                { time: 170, text: "I knew you in another life" },
+                { time: 175, text: "You had the same look in your eyes" },
+                { time: 180, text: "I love you, don't act so surprised" },
+                { time: 184, text: "Waaaw, you sing well :)" },
+                { time: 187, text: "I'm so proud of you 😎" },
+                { time: 191, text: "I wish long and happy life with me" },
+                { time: 195, text: "Be patient" },
+                { time: 197, text: "Be hardworking girl" },
+                { time: 200, text: "Be happy" },
+                { time: 203, text: "DO NOT BE STRESSED" },
+                { time: 205, text: "DO NOT CRY" },
+                { time: 207, text: "I love you soo much 💕" },
             ],
             currentLyricIndex: 0,
         }
@@ -156,7 +172,7 @@ export default {
 .audio-player {
     width: 900px;
     max-width: 1000px;
-    height: 99vh;
+    height: 100vh;
     margin: 0 auto;
     background-color: #0d1a2a;
     padding: 24px;

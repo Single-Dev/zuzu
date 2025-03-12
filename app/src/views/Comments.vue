@@ -129,7 +129,7 @@
                                     <div class="reply-form-actions">
                                         <button @click="submitReply(comment.id, comment.name)"
                                             :disabled="isSubmittingReply" class="reply-submit-btn">
-                                            {{ isSubmittingReply ? 'Posting...' : 'Post Reply' }}
+                                            {{ isSubmittingReply ? 'Posting...' : 'Reply' }}
                                         </button>
                                     </div>
                                 </div>
@@ -1198,6 +1198,7 @@ button:disabled {
         width: 100%;
         padding: 15px;
         margin: 20px auto;
+        margin-top: 50px !important;
     }
 
     .comment,

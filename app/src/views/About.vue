@@ -1,39 +1,20 @@
 <template>
-    <div class="welcome-container" :class="{ 'iframe-fullscreen': isFullScreen }">
+    <div class="welcome-container">
         <div class="welcome-content">
             <div class="welcome-header">
-                <h1>About us</h1>
-                <p class="subtitle">I would give you unexpected gift if we were together but since we are far I decided
-                    to create a site for you. This site gets major updates every single birthday as included gift.</p>
+                <h1>About it</h1>
+                <p class="subtitle">
+                    I think it is okay to just send this gift as we aren't dating just for a while, and time is passing so fast, be patient and wait for me. I will come back to you soon, I promise. Talking will be allowed soon. I hope you are only focusing on your lessons. <b>Good luck to get NUS. I believe in you. You can do it.</b> SEE YOU SOON. I LOVE YOU 🫀   
+                </p>
+                <span>© Owned by <a href="https://github.com/Single-Dev">Beckzodiy</a></span>
             </div>
-
         </div>
-
-
-        <!-- <div class="welcome-footer">
-            <button class="toggle-button" @click="toggleTheme">
-                <moon-icon v-if="isDarkMode" />
-                <sun-icon v-else />
-                {{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}
-            </button>
-        </div> -->
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import { MoonIcon, SunIcon } from 'lucide-vue-next';
 
-const isDarkMode = ref(false);
-
-const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value;
-    document.body.classList.toggle('dark-mode', isDarkMode.value);
-};
-
-// onMounted(() => {
-//     document.body.classList.add('dark-mode')
-// })
 </script>
 
 <style scoped>
