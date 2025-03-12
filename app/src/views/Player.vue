@@ -409,7 +409,7 @@ export default {
     }
 
     .lyrics-container p.active {
-        font-size: 16px;
+        font-size: 19px;
     }
 }
 </style>
