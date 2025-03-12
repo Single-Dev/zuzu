@@ -1,6 +1,6 @@
 <template>
     <div class="comments-container">
-        <h2 class="comments-title">Comments <span v-if="!loading">({{ comments.length }})</span></h2>
+        <h2 class="comments-title">Comments <span v-if="!loading">({{ totalCommentCount }})</span></h2>
 
         <div v-if="loading" class="loading">
             <div class="loading-spinner"></div>
@@ -13,7 +13,7 @@
 
         <template v-else>
             <!-- Comment Form -->
-            <div v-if="comments.length >= 100" class="comments-limit-reached">
+            <div v-if="totalCommentCount >= 100" class="comments-limit-reached">
                 <p>Whoaaa... we reached 100 comments. It is time to read them all.</p>
             </div>
 
@@ -22,12 +22,14 @@
                 <div class="input-group">
                     <input type="text" v-model="userNameInput" placeholder="What's your name?"
                         :class="{ 'error-input': nameError }" />
-                    <button @click="handleNameSubmit" :disabled="isSubmitting" ><UserCheck/></button>
+                    <button @click="handleNameSubmit" :disabled="isSubmitting">
+                        <UserCheck />
+                    </button>
                 </div>
                 <p v-if="nameError" class="error-text">{{ nameError }}</p>
             </div>
 
-            <form v-else-if="comments.length < 100" @submit.prevent="submitComment" class="comment-form">
+            <form v-else-if="totalCommentCount < 100" @submit.prevent="submitComment" class="comment-form">
                 <div class="form-header">
                     <div class="user-avatar">{{ userName.charAt(0).toUpperCase() }}</div>
                     <span class="commenting-as">Commenting as <strong>{{ userName }}</strong></span>
@@ -50,16 +52,55 @@
             </div>
 
             <div v-else class="comments-list">
-                <div v-for="comment in comments" :key="comment.id" class="comment">
-                    <div class="comment-avatar" :style="{ backgroundColor: generateAvatarColor(comment.name) }">
-                        {{ comment.name.charAt(0).toUpperCase() }}
-                    </div>
-                    <div class="comment-content">
-                        <div class="comment-header">
-                            <span class="comment-author">{{ comment.name }}</span>
-                            <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                <!-- Only render top-level comments here -->
+                <div v-for="comment in topLevelComments" :key="comment.id" class="comment-thread">
+                    <!-- Parent comment -->
+                    <div class="comment">
+                        <div class="comment-avatar" :style="{ backgroundColor: generateAvatarColor(comment.name) }">
+                            {{ comment.name.charAt(0).toUpperCase() }}
                         </div>
-                        <p class="comment-text">{{ comment.text }}</p>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">{{ comment.name }}</span>
+                                <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
+                            </div>
+                            <p class="comment-text">{{ comment.text }}</p>
+                            <div  class="comment-actions" v-if="userName && totalCommentCount < 100">
+                                <button @click="toggleReplyForm(comment.id)" class="reply-button"
+                                    :class="{ 'active': activeReplyId === comment.id }">
+                                    {{ activeReplyId === comment.id ? 'Cancel' : 'Reply' }}
+                                </button>
+                            </div>
+
+                            <!-- Reply form -->
+                            <div v-if="activeReplyId === comment.id" class="reply-form">
+                                <textarea v-model="replyText" placeholder="Write a reply..."
+                                    :class="{ 'error-input': replyError }"></textarea>
+                                <p v-if="replyError" class="error-text">{{ replyError }}</p>
+                                <div class="reply-form-actions">
+                                    <button @click="submitReply(comment.id)" :disabled="isSubmittingReply">
+                                        {{ isSubmittingReply ? 'Posting...' : 'Reply' }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Replies -->
+                    <div v-if="getRepliesForComment(comment.id).length > 0" class="replies">
+                        <div v-for="reply in getRepliesForComment(comment.id)" :key="reply.id" class="reply">
+                            <div class="comment-avatar reply-avatar"
+                                :style="{ backgroundColor: generateAvatarColor(reply.name) }">
+                                {{ reply.name.charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="comment-content">
+                                <div class="comment-header">
+                                    <span class="comment-author">{{ reply.name }}</span>
+                                    <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+                                </div>
+                                <p class="comment-text">{{ reply.text }}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -69,6 +110,7 @@
 
 <script>
 import { UserCheck } from 'lucide-vue-next';
+
 export default {
     name: 'CommentsSection',
     components: {
@@ -86,7 +128,23 @@ export default {
             nameError: '',
             commentError: '',
             isSubmitting: false,
-            apiUrl: 'https://67d028d8825945773eafc4d7.mockapi.io/comments'
+            apiUrl: 'https://67d028d8825945773eafc4d7.mockapi.io/comments',
+            pollingInterval: null,
+            lastFetchTime: null,
+            activeReplyId: null,
+            replyText: '',
+            replyError: '',
+            isSubmittingReply: false
+        }
+    },
+    computed: {
+        // Get only top-level comments (no parent)
+        topLevelComments() {
+            return this.comments.filter(comment => !comment.parentId);
+        },
+        // Count all comments including replies
+        totalCommentCount() {
+            return this.comments.length;
         }
     },
     mounted() {
@@ -97,8 +155,145 @@ export default {
             this.userName = storedName
             this.showCommentForm = true
         }
+
+        // Start polling for real-time updates
+        this.startRealTimeUpdates()
+    },
+    beforeUnmount() {
+        // Clean up polling interval when component is destroyed
+        this.stopRealTimeUpdates()
     },
     methods: {
+        // Get replies for a specific comment
+        getRepliesForComment(commentId) {
+            return this.comments.filter(comment => comment.parentId === commentId)
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Sort oldest first for replies
+        },
+
+        // Toggle reply form visibility
+        toggleReplyForm(commentId) {
+            if (this.activeReplyId === commentId) {
+                // If clicking on the same comment, close the form
+                this.activeReplyId = null;
+                this.replyText = '';
+                this.replyError = '';
+            } else {
+                // Open reply form for this comment
+                this.activeReplyId = commentId;
+                this.replyText = '';
+                this.replyError = '';
+            }
+        },
+
+        // Submit a reply to a comment
+        async submitReply(parentId) {
+            if (!this.replyText.trim()) {
+                this.replyError = 'Please enter a reply';
+                return;
+            }
+
+            this.replyError = '';
+            this.isSubmittingReply = true;
+
+            try {
+                const newReply = {
+                    name: this.userName,
+                    text: this.replyText,
+                    createdAt: new Date().toISOString(),
+                    parentId: parentId // Set the parent ID to create the relationship
+                };
+
+                const response = await fetch(this.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newReply)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to post reply');
+                }
+
+                const savedReply = await response.json();
+
+                // Add the new reply to the comments list
+                this.comments.push(savedReply);
+
+                // Clear the reply form
+                this.replyText = '';
+                this.activeReplyId = null;
+
+            } catch (err) {
+                console.error('Error posting reply:', err);
+                this.replyError = 'Failed to post your reply. Please try again.';
+            } finally {
+                this.isSubmittingReply = false;
+            }
+        },
+
+        startRealTimeUpdates() {
+            // Poll for new comments every 1 second
+            this.pollingInterval = setInterval(() => {
+                this.checkForNewComments()
+            }, 1000)
+        },
+
+        stopRealTimeUpdates() {
+            if (this.pollingInterval) {
+                clearInterval(this.pollingInterval)
+                this.pollingInterval = null
+            }
+        },
+
+        async checkForNewComments() {
+            try {
+                // Only fetch comments that are newer than our last fetch
+                let url = this.apiUrl
+                if (this.lastFetchTime) {
+                    // This is a mock implementation - in a real API you would filter by date
+                    // url += `?createdAt_gt=${this.lastFetchTime}`
+                }
+
+                const response = await fetch(url)
+                if (!response.ok) {
+                    throw new Error('Failed to fetch new comments')
+                }
+
+                const newComments = await response.json()
+
+                // Update last fetch time
+                this.lastFetchTime = new Date().toISOString()
+
+                // If we already have comments, check for new ones
+                if (this.comments.length > 0) {
+                    const existingIds = new Set(this.comments.map(c => c.id))
+                    const freshComments = newComments.filter(c => !existingIds.has(c.id))
+
+                    if (freshComments.length > 0) {
+                        // Add new comments to our list
+                        this.comments = [...this.comments, ...freshComments]
+                    }
+                } else {
+                    // First load, just set all comments
+                    this.comments = newComments
+                }
+
+                // Sort top-level comments by date (newest first)
+                // Replies are sorted separately in the getRepliesForComment method
+                this.comments = [...this.comments].sort((a, b) => {
+                    // Only sort top-level comments by newest first
+                    if (!a.parentId && !b.parentId) {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                    return 0; // Don't change order for replies
+                });
+            } catch (err) {
+                console.error('Error checking for new comments:', err)
+                // Don't show error to user during background polling
+            }
+        },
+
         async fetchComments() {
             this.loading = true
             this.error = null
@@ -111,7 +306,18 @@ export default {
                 }
 
                 this.comments = await response.json()
-                this.comments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+                // Sort top-level comments by date (newest first)
+                this.comments = [...this.comments].sort((a, b) => {
+                    // Only sort top-level comments by newest first
+                    if (!a.parentId && !b.parentId) {
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    }
+                    return 0; // Don't change order for replies
+                });
+
+                // Set last fetch time for real-time updates
+                this.lastFetchTime = new Date().toISOString()
             } catch (err) {
                 console.error('Error fetching comments:', err)
                 this.error = 'Unable to load comments. Please try again later.'
@@ -147,7 +353,8 @@ export default {
                 const newComment = {
                     name: this.userName,
                     text: this.commentText,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    parentId: null // Explicitly set to null for top-level comments
                 }
 
                 const response = await fetch(this.apiUrl, {
@@ -163,6 +370,8 @@ export default {
                 }
 
                 const savedComment = await response.json()
+
+                // Add the new comment to the top of the list immediately
                 this.comments.unshift(savedComment)
                 this.commentText = ''
 
@@ -234,12 +443,13 @@ export default {
 <style scoped>
 .comments-container {
     width: 900px;
-    margin: 40px 0 0 0;
+    margin: 40px auto;
     padding: 20px;
     color: #e2e8f0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     background-color: #1a202c;
     border-radius: 8px;
+    box-sizing: border-box;
     display: block !important;
 }
 
@@ -321,6 +531,8 @@ textarea {
     font-family: inherit;
     font-size: 1rem;
     transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 input:focus,
@@ -329,19 +541,14 @@ textarea:focus {
     border-color: #10b981;
 }
 
-input {
-    flex: 1;
-}
-
 textarea {
-    width: 100%;
     min-height: 120px;
     resize: vertical;
     margin-bottom: 0.5rem;
 }
 
 button {
-    padding: 10px;
+    padding: 10px 15px;
     background-color: #10b981;
     color: #1a202c;
     border: none;
@@ -349,6 +556,7 @@ button {
     cursor: pointer;
     font-weight: 600;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 button:hover {
@@ -395,6 +603,7 @@ button:disabled {
     justify-content: center;
     font-weight: bold;
     margin-right: 0.75rem;
+    flex-shrink: 0;
 }
 
 .commenting-as {
@@ -421,6 +630,11 @@ button:disabled {
     gap: 1rem;
 }
 
+.comment-thread {
+    display: flex;
+    flex-direction: column;
+}
+
 .comment {
     display: flex;
     padding: 1rem;
@@ -443,12 +657,17 @@ button:disabled {
 
 .comment-content {
     flex: 1;
+    min-width: 0;
+    /* Prevents content from overflowing on small screens */
 }
 
 .comment-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+    /* Allow wrapping on small screens */
+    gap: 0.5rem;
 }
 
 .comment-author {
@@ -465,11 +684,153 @@ button:disabled {
     margin: 0;
     line-height: 1.5;
     color: #cbd5e0;
+    word-break: break-word;
+    /* Ensures text wraps properly on mobile */
 }
 
+.comment-actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reply-button {
+    background-color: transparent;
+    color: #94a3b8;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    font-weight: normal;
+    border: 1px solid #4a5568;
+}
+
+.reply-button:hover {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+
+.reply-button.active {
+    background-color: #4a5568;
+    color: #e2e8f0;
+}
+
+.reply-form {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: #1a202c;
+    border-radius: 4px;
+}
+
+.reply-form textarea {
+    min-height: 80px;
+}
+
+.reply-form-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.replies {
+    margin-left: 2rem;
+    margin-top: 0.5rem;
+    border-left: 2px solid #4a5568;
+    padding-left: 1rem;
+}
+
+.reply {
+    display: flex;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background-color: #2d3748;
+    border-radius: 6px;
+}
+
+.reply:last-child {
+    margin-bottom: 0;
+}
+
+.reply-avatar {
+    width: 32px;
+    height: 32px;
+}
+
+/* Mobile Responsive Styles */
 @media (max-width: 768px) {
     .comments-container {
-        width: 300px;
+        width: 100%;
+        padding: 15px;
+        margin: 20px auto;
+    }
+
+    .comment,
+    .reply {
+        padding: 12px;
+    }
+
+    .comment-form,
+    .name-prompt,
+    .reply-form {
+        padding: 15px;
+    }
+
+    .form-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .user-avatar {
+        margin-bottom: 10px;
+    }
+
+    .comment-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .comment-date {
+        margin-top: 2px;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .input-group button {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    textarea {
+        min-height: 100px;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .replies {
+        margin-left: 0.5rem;
+        padding-left: 0.5rem;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .comments-container {
+        padding: 10px;
+    }
+
+    .comments-title {
+        font-size: 1.3rem;
+    }
+
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+    }
+
+    .reply-avatar {
+        width: 28px;
+        height: 28px;
     }
 }
 </style>
