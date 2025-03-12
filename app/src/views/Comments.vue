@@ -1,6 +1,52 @@
 <template>
     <div class="comments-container">
-        <h2 class="comments-title">Comments <span v-if="!loading">({{ totalCommentCount }})</span></h2>
+        <div class="comments-header">
+            <h2 class="comments-title">Comments <span v-if="!loading">({{ totalCommentCount }})</span></h2>
+
+            <!-- Notifications Icon -->
+            <div v-if="userName" class="notifications-wrapper">
+                <button @click="toggleNotifications" class="notifications-button">
+                    <Bell :size="20" />
+                    <span v-if="unreadNotifications.length > 0" class="notification-badge">
+                        {{ unreadNotifications.length }}
+                    </span>
+                </button>
+
+                <!-- Notifications Dropdown -->
+                <transition name="fade">
+                    <div v-if="showNotifications" class="notifications-dropdown">
+                        <h3 class="notifications-heading">Notifications</h3>
+                        <div v-if="notifications.length === 0" class="no-notifications">
+                            <p>No notifications yet</p>
+                        </div>
+                        <div v-else class="notifications-list">
+                            <div v-for="notification in notifications" :key="notification.id" class="notification-item"
+                                :class="{ 'unread': !notification.read }"
+                                @click="markAsRead(notification.id); scrollToComment(notification.commentId)">
+                                <div class="notification-avatar"
+                                    :style="{ backgroundColor: generateAvatarColor(notification.fromName) }">
+                                    {{ notification.fromName.charAt(0).toUpperCase() }}
+                                </div>
+                                <div class="notification-content">
+                                    <p class="notification-text">
+                                        <strong>{{ notification.fromName }}</strong> replied to your comment
+                                    </p>
+                                    <span class="notification-time">{{ formatDate(notification.createdAt) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="notifications-actions">
+                            <button v-if="unreadNotifications.length > 0" @click="markAllAsRead" class="mark-all-read">
+                                Mark all as read
+                            </button>
+                            <button @click="clearAllNotifications" class="clear-all">
+                                Clear all
+                            </button>
+                        </div>
+                    </div>
+                </transition>
+            </div>
+        </div>
 
         <div v-if="loading" class="loading">
             <div class="loading-spinner"></div>
@@ -53,9 +99,10 @@
 
             <div v-else class="comments-list">
                 <!-- Only render top-level comments here -->
-                <div v-for="comment in topLevelComments" :key="comment.id" class="comment-thread">
+                <div v-for="comment in sortedTopLevelComments" :key="comment.id" class="comment-thread"
+                    :id="`comment-${comment.id}`">
                     <!-- Parent comment -->
-                    <div class="comment">
+                    <div class="comment" :class="{ 'highlight': highlightedCommentId === comment.id }">
                         <div class="comment-avatar" :style="{ backgroundColor: generateAvatarColor(comment.name) }">
                             {{ comment.name.charAt(0).toUpperCase() }}
                         </div>
@@ -65,43 +112,51 @@
                                 <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
                             </div>
                             <p class="comment-text">{{ comment.text }}</p>
-                            <div  class="comment-actions" v-if="userName && totalCommentCount < 100">
+                            <div class="comment-actions" v-if="userName && totalCommentCount < 100">
                                 <button @click="toggleReplyForm(comment.id)" class="reply-button"
                                     :class="{ 'active': activeReplyId === comment.id }">
-                                    {{ activeReplyId === comment.id ? 'Cancel' : 'Reply' }}
+                                    <span class="reply-btn-text">{{ activeReplyId === comment.id ? 'Cancel' : 'Reply'
+                                    }}</span>
                                 </button>
                             </div>
 
-                            <!-- Reply form -->
-                            <div v-if="activeReplyId === comment.id" class="reply-form">
-                                <textarea v-model="replyText" placeholder="Write a reply..."
-                                    :class="{ 'error-input': replyError }"></textarea>
-                                <p v-if="replyError" class="error-text">{{ replyError }}</p>
-                                <div class="reply-form-actions">
-                                    <button @click="submitReply(comment.id)" :disabled="isSubmittingReply">
-                                        {{ isSubmittingReply ? 'Posting...' : 'Reply' }}
-                                    </button>
+                            <!-- Reply form with transition -->
+                            <transition name="slide-fade">
+                                <div v-if="activeReplyId === comment.id" class="reply-form">
+                                    <textarea v-model="replyText" placeholder="Write a reply..."
+                                        :class="{ 'error-input': replyError }" ref="replyTextarea"></textarea>
+                                    <p v-if="replyError" class="error-text">{{ replyError }}</p>
+                                    <div class="reply-form-actions">
+                                        <button @click="submitReply(comment.id, comment.name)"
+                                            :disabled="isSubmittingReply" class="reply-submit-btn">
+                                            {{ isSubmittingReply ? 'Posting...' : 'Post Reply' }}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+                            </transition>
                         </div>
                     </div>
 
-                    <!-- Replies -->
-                    <div v-if="getRepliesForComment(comment.id).length > 0" class="replies">
-                        <div v-for="reply in getRepliesForComment(comment.id)" :key="reply.id" class="reply">
-                            <div class="comment-avatar reply-avatar"
-                                :style="{ backgroundColor: generateAvatarColor(reply.name) }">
-                                {{ reply.name.charAt(0).toUpperCase() }}
-                            </div>
-                            <div class="comment-content">
-                                <div class="comment-header">
-                                    <span class="comment-author">{{ reply.name }}</span>
-                                    <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+                    <!-- Replies with transition group -->
+                    <transition-group name="list" tag="div" class="replies-container">
+                        <div v-if="getRepliesForComment(comment.id).length > 0" class="replies"
+                            :key="`replies-${comment.id}`">
+                            <div v-for="reply in getRepliesForComment(comment.id)" :key="reply.id" class="reply"
+                                :id="`comment-${reply.id}`" :class="{ 'highlight': highlightedCommentId === reply.id }">
+                                <div class="comment-avatar reply-avatar"
+                                    :style="{ backgroundColor: generateAvatarColor(reply.name) }">
+                                    {{ reply.name.charAt(0).toUpperCase() }}
                                 </div>
-                                <p class="comment-text">{{ reply.text }}</p>
+                                <div class="comment-content">
+                                    <div class="comment-header">
+                                        <span class="comment-author">{{ reply.name }}</span>
+                                        <span class="comment-date">{{ formatDate(reply.createdAt) }}</span>
+                                    </div>
+                                    <p class="comment-text">{{ reply.text }}</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </transition-group>
                 </div>
             </div>
         </template>
@@ -109,12 +164,13 @@
 </template>
 
 <script>
-import { UserCheck } from 'lucide-vue-next';
+import { UserCheck, Bell } from 'lucide-vue-next';
 
 export default {
     name: 'CommentsSection',
     components: {
-        UserCheck
+        UserCheck,
+        Bell
     },
     data() {
         return {
@@ -134,7 +190,10 @@ export default {
             activeReplyId: null,
             replyText: '',
             replyError: '',
-            isSubmittingReply: false
+            isSubmittingReply: false,
+            notifications: [],
+            showNotifications: false,
+            highlightedCommentId: null
         }
     },
     computed: {
@@ -142,9 +201,17 @@ export default {
         topLevelComments() {
             return this.comments.filter(comment => !comment.parentId);
         },
+        // Get sorted top-level comments (newest first)
+        sortedTopLevelComments() {
+            return [...this.topLevelComments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        },
         // Count all comments including replies
         totalCommentCount() {
             return this.comments.length;
+        },
+        // Get unread notifications
+        unreadNotifications() {
+            return this.notifications.filter(notification => !notification.read);
         }
     },
     mounted() {
@@ -156,21 +223,175 @@ export default {
             this.showCommentForm = true
         }
 
+        // Load notifications from localStorage
+        this.loadNotifications()
+
         // Start polling for real-time updates
         this.startRealTimeUpdates()
+
+        // Add click outside listener for notifications dropdown
+        document.addEventListener('click', this.handleClickOutside)
     },
     beforeUnmount() {
         // Clean up polling interval when component is destroyed
         this.stopRealTimeUpdates()
+        // Remove click outside listener
+        document.removeEventListener('click', this.handleClickOutside)
+    },
+    watch: {
+        // Focus the reply textarea when it appears
+        activeReplyId(newVal) {
+            if (newVal) {
+                this.$nextTick(() => {
+                    if (this.$refs.replyTextarea) {
+                        this.$refs.replyTextarea.focus();
+                    }
+                });
+            }
+        },
+        // Watch for new comments to check for notifications
+        comments: {
+            deep: true,
+            handler(newComments, oldComments) {
+                if (oldComments.length > 0 && newComments.length > oldComments.length) {
+                    this.checkForNewReplies(newComments, oldComments);
+                }
+            }
+        }
     },
     methods: {
+        // Load notifications from localStorage
+        loadNotifications() {
+            if (this.userName) {
+                const storedNotifications = localStorage.getItem(`notifications_${this.userName}`);
+                if (storedNotifications) {
+                    this.notifications = JSON.parse(storedNotifications);
+                }
+            }
+        },
+
+        // Save notifications to localStorage
+        saveNotifications() {
+            if (this.userName) {
+                localStorage.setItem(`notifications_${this.userName}`, JSON.stringify(this.notifications));
+            }
+        },
+
+        // Toggle notifications dropdown
+        toggleNotifications(event) {
+            event.stopPropagation();
+            this.showNotifications = !this.showNotifications;
+        },
+
+        // Handle click outside to close notifications dropdown
+        handleClickOutside(event) {
+            const dropdown = document.querySelector('.notifications-dropdown');
+            const button = document.querySelector('.notifications-button');
+
+            if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+                this.showNotifications = false;
+            }
+        },
+
+        // Mark notification as read
+        markAsRead(notificationId) {
+            const notification = this.notifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                this.saveNotifications();
+            }
+            this.showNotifications = false;
+        },
+
+        // Mark all notifications as read
+        markAllAsRead() {
+            this.notifications.forEach(notification => {
+                notification.read = true;
+            });
+            this.saveNotifications();
+        },
+
+        // Clear all notifications
+        clearAllNotifications() {
+            this.notifications = [];
+            this.saveNotifications();
+        },
+
+        // Scroll to a comment when clicking on a notification
+        scrollToComment(commentId) {
+            this.highlightedCommentId = commentId;
+
+            this.$nextTick(() => {
+                const commentElement = document.getElementById(`comment-${commentId}`);
+                if (commentElement) {
+                    commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                    // Remove highlight after a delay
+                    setTimeout(() => {
+                        this.highlightedCommentId = null;
+                    }, 3000);
+                }
+            });
+        },
+
+        // Check for new replies to the current user's comments
+        checkForNewReplies(newComments, oldComments) {
+            if (!this.userName) return;
+
+            // Find new replies
+            const oldIds = new Set(oldComments.map(c => c.id));
+            const newReplies = newComments.filter(comment =>
+                !oldIds.has(comment.id) && comment.parentId
+            );
+
+            // Check if any new replies are to the current user's comments
+            newReplies.forEach(reply => {
+                const parentComment = newComments.find(c => c.id === reply.parentId);
+
+                // If the parent comment is by the current user and the reply is from someone else
+                if (parentComment && parentComment.name === this.userName && reply.name !== this.userName) {
+                    this.addNotification(reply, parentComment);
+                }
+            });
+        },
+
+        // Add a notification
+        addNotification(reply, parentComment) {
+            const notification = {
+                id: `notification_${Date.now()}`,
+                commentId: reply.id,
+                parentCommentId: parentComment.id,
+                fromName: reply.name,
+                createdAt: reply.createdAt,
+                read: false
+            };
+
+            this.notifications.unshift(notification);
+            this.saveNotifications();
+
+            // Show browser notification if supported
+            this.showBrowserNotification(reply.name);
+        },
+
+        // Show browser notification if supported and permitted
+        showBrowserNotification(fromName) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('New Reply', {
+                    body: `${fromName} replied to your comment`,
+                    icon: '/favicon.ico'
+                });
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission();
+            }
+        },
+
         // Get replies for a specific comment
         getRepliesForComment(commentId) {
             return this.comments.filter(comment => comment.parentId === commentId)
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)); // Sort oldest first for replies
         },
 
-        // Toggle reply form visibility
+        // Toggle reply form visibility with smooth transition
         toggleReplyForm(commentId) {
             if (this.activeReplyId === commentId) {
                 // If clicking on the same comment, close the form
@@ -186,7 +407,7 @@ export default {
         },
 
         // Submit a reply to a comment
-        async submitReply(parentId) {
+        async submitReply(parentId, parentAuthor) {
             if (!this.replyText.trim()) {
                 this.replyError = 'Please enter a reply';
                 return;
@@ -278,16 +499,6 @@ export default {
                     // First load, just set all comments
                     this.comments = newComments
                 }
-
-                // Sort top-level comments by date (newest first)
-                // Replies are sorted separately in the getRepliesForComment method
-                this.comments = [...this.comments].sort((a, b) => {
-                    // Only sort top-level comments by newest first
-                    if (!a.parentId && !b.parentId) {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    }
-                    return 0; // Don't change order for replies
-                });
             } catch (err) {
                 console.error('Error checking for new comments:', err)
                 // Don't show error to user during background polling
@@ -306,15 +517,6 @@ export default {
                 }
 
                 this.comments = await response.json()
-
-                // Sort top-level comments by date (newest first)
-                this.comments = [...this.comments].sort((a, b) => {
-                    // Only sort top-level comments by newest first
-                    if (!a.parentId && !b.parentId) {
-                        return new Date(b.createdAt) - new Date(a.createdAt);
-                    }
-                    return 0; // Don't change order for replies
-                });
 
                 // Set last fetch time for real-time updates
                 this.lastFetchTime = new Date().toISOString()
@@ -338,6 +540,9 @@ export default {
 
             // Store user name in localStorage for future visits
             localStorage.setItem('userName', this.userName)
+
+            // Load notifications for this user
+            this.loadNotifications()
         },
 
         async submitComment() {
@@ -450,14 +655,202 @@ export default {
     background-color: #1a202c;
     border-radius: 8px;
     box-sizing: border-box;
+    overflow-x: hidden;
     display: block !important;
+    transition: 1s all;
+    /* Prevent horizontal scrolling */
+}
+
+.comments-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
 }
 
 .comments-title {
     font-size: 1.5rem;
-    margin-bottom: 1.5rem;
     color: #10b981;
     font-weight: 600;
+    margin: 0;
+}
+
+/* Notifications Styles */
+.notifications-wrapper {
+    position: relative;
+}
+
+.notifications-button {
+    position: relative;
+    background-color: transparent;
+    color: #e2e8f0;
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid #4a5568;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.notifications-button:hover {
+    background-color: #2d3748;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    max-height: 400px;
+    background-color: #2d3748;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.notifications-heading {
+    margin: 0;
+    padding: 15px;
+    font-size: 1.1rem;
+    border-bottom: 1px solid #4a5568;
+    color: #e2e8f0;
+}
+
+.notifications-list {
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+.no-notifications {
+    padding: 20px;
+    text-align: center;
+    color: #94a3b8;
+}
+
+.notification-item {
+    display: flex;
+    padding: 12px 15px;
+    border-bottom: 1px solid #4a5568;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+    background-color: #374151;
+}
+
+.notification-item.unread {
+    background-color: rgba(16, 185, 129, 0.1);
+}
+
+.notification-item.unread:hover {
+    background-color: rgba(16, 185, 129, 0.15);
+}
+
+.notification-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1a202c;
+    font-weight: bold;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-text {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    color: #e2e8f0;
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.notifications-actions {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    border-top: 1px solid #4a5568;
+}
+
+.mark-all-read,
+.clear-all {
+    background-color: transparent;
+    color: #94a3b8;
+    border: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.mark-all-read:hover,
+.clear-all:hover {
+    background-color: #374151;
+    color: #e2e8f0;
+}
+
+/* Highlight effect for comments */
+.comment.highlight,
+.reply.highlight {
+    animation: highlight-pulse 3s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+    0% {
+        background-color: #2d3748;
+    }
+
+    30% {
+        background-color: rgba(16, 185, 129, 0.3);
+    }
+
+    100% {
+        background-color: #2d3748;
+    }
+}
+
+/* Fade animation for notifications dropdown */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
 }
 
 .loading {
@@ -628,11 +1021,13 @@ button:disabled {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
 }
 
 .comment-thread {
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
 .comment {
@@ -640,6 +1035,8 @@ button:disabled {
     padding: 1rem;
     background-color: #2d3748;
     border-radius: 8px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .comment-avatar {
@@ -659,6 +1056,7 @@ button:disabled {
     flex: 1;
     min-width: 0;
     /* Prevents content from overflowing on small screens */
+    width: 100%;
 }
 
 .comment-header {
@@ -701,6 +1099,10 @@ button:disabled {
     font-size: 0.85rem;
     font-weight: normal;
     border: 1px solid #4a5568;
+    min-width: 60px;
+    /* Fixed width to prevent layout shifts */
+    text-align: center;
+    transition: all 0.2s ease;
 }
 
 .reply-button:hover {
@@ -718,6 +1120,8 @@ button:disabled {
     padding: 0.75rem;
     background-color: #1a202c;
     border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .reply-form textarea {
@@ -729,11 +1133,18 @@ button:disabled {
     justify-content: flex-end;
 }
 
+.replies-container {
+    width: 100%;
+    box-sizing: border-box;
+}
+
 .replies {
     margin-left: 2rem;
     margin-top: 0.5rem;
     border-left: 2px solid #4a5568;
     padding-left: 1rem;
+    width: calc(100% - 3rem);
+    box-sizing: border-box;
 }
 
 .reply {
@@ -742,6 +1153,8 @@ button:disabled {
     margin-bottom: 0.5rem;
     background-color: #2d3748;
     border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .reply:last-child {
@@ -751,6 +1164,32 @@ button:disabled {
 .reply-avatar {
     width: 32px;
     height: 32px;
+}
+
+/* Animations */
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateY(-10px);
+    opacity: 0;
+}
+
+.list-enter-active,
+.list-leave-active {
+    transition: all 0.3s ease;
+}
+
+.list-enter-from,
+.list-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
 }
 
 /* Mobile Responsive Styles */
@@ -764,12 +1203,16 @@ button:disabled {
     .comment,
     .reply {
         padding: 12px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .comment-form,
     .name-prompt,
     .reply-form {
         padding: 15px;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .form-header {
@@ -792,6 +1235,7 @@ button:disabled {
 
     .input-group {
         flex-direction: column;
+        width: 100%;
     }
 
     .input-group button {
@@ -810,6 +1254,35 @@ button:disabled {
     .replies {
         margin-left: 0.5rem;
         padding-left: 0.5rem;
+        width: calc(100% - 1rem);
+    }
+
+    /* Fix for mobile width issues */
+    .comment-thread,
+    .comment-content,
+    .replies-container {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Ensure reply button has fixed width on mobile */
+    .reply-button {
+        width: 250px;
+        padding: 6px 10px;
+    }
+
+    /* Make reply form animation smoother on mobile */
+    .slide-fade-enter-active {
+        transition: all 0.25s ease-out;
+    }
+
+    .slide-fade-leave-active {
+        transition: all 0.15s ease-in;
+    }
+
+    .notifications-dropdown {
+        width: 280px;
+        right: -10px;
     }
 }
 
@@ -831,6 +1304,10 @@ button:disabled {
     .reply-avatar {
         width: 28px;
         height: 28px;
+    }
+
+    .notifications-dropdown {
+        width: 250px;
     }
 }
 </style>
