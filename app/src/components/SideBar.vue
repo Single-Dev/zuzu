@@ -50,7 +50,7 @@
 
                 <router-link to="/about" class="nav-item" active-class="active" @click="toggleMobile">
                     <Info class="icon" />
-                    <span class="nav-text">About us</span>
+                    <span class="nav-text">About</span>
                 </router-link>
             </nav>
 

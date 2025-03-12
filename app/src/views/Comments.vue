@@ -1141,7 +1141,6 @@ button:disabled {
 .replies {
     margin-left: 2rem;
     margin-top: 0.5rem;
-    border-left: 2px solid #4a5568;
     padding-left: 1rem;
     width: calc(100% - 3rem);
     box-sizing: border-box;
@@ -1151,7 +1150,9 @@ button:disabled {
     display: flex;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
-    background-color: #2d3748;
+    border-left: 4px solid #10b981;
+    border-radius: 4px;
+    background-color: rgba(16, 185, 129, 0.1);
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;

@@ -1,5 +1,8 @@
 <template>
     <div class="audio-player">
+        <div class="attention">
+            ⚠️ This music streams online. If it doesn’t play, revisit this page or check your internet.
+        </div>
         <div class="player-container">
             <!-- Album artwork -->
             <div class="album-art">
@@ -169,6 +172,16 @@ export default {
 </script>
 
 <style>
+
+.attention{
+    padding: 1rem;
+    background-color: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid #10b981;
+    color: #d1fae5;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
 .audio-player {
     width: 900px;
     max-width: 1000px;

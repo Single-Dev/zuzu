@@ -1,11 +1,13 @@
 <template>
     <div class="welcome-container" :class="{ 'iframe-fullscreen': isFullScreen }">
       <div v-if="!isFullScreen" class="welcome-content">
+        <div class="attention">
+          <p>⚠️ Avoid translators to prevent interface glitches; I'll translate Indonesian for you.</p>
+        </div>
         <div class="welcome-header">
           <h1>Welcome to Zara Hainin's website</h1>
           <p class="subtitle">I would give you unexpected gift if we were together but since we are far I decided to create a site for you.</p>
         </div>
-        
         <div class="info-cards">
           <div class="info-card">
             <maximize-icon class="card-icon" />
@@ -167,7 +169,14 @@
     transform: translateY(-5px);
     box-shadow: 0 10px 15px var(--shadow-color);
   }
-  
+  .attention{
+    padding: 1rem;
+    background-color: rgba(219, 16, 16, 0.1);
+    border-left: 4px solid #b91016;
+    color: #d1fae5;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+  }
   .card-icon {
     width: 48px;
     height: 48px;

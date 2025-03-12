@@ -2,7 +2,7 @@
     <div class="welcome-container">
         <div class="welcome-content">
             <div class="welcome-header">
-                <h1>About it</h1>
+                <h1>About...</h1>
                 <p class="subtitle">
                     I think it is okay to just send this gift as we aren't dating just for a while, and time is passing so fast, be patient and wait for me. I will come back to you soon, I promise. Talking will be allowed soon. I hope you are only focusing on your lessons. <b>Good luck to get NUS. I believe in you. You can do it.</b> SEE YOU SOON. I LOVE YOU 🫀   
                 </p>
