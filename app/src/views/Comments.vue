@@ -14,7 +14,7 @@
         <template v-else>
             <!-- Comment Form -->
             <div v-if="comments.length >= 100" class="comments-limit-reached">
-                <p>Comments are closed. Maximum number of comments reached.</p>
+                <p>Whoaaa... we reached 100 comments. It is time to read them all.</p>
             </div>
 
             <div v-else-if="!showCommentForm && !userName" class="name-prompt">
@@ -22,7 +22,7 @@
                 <div class="input-group">
                     <input type="text" v-model="userNameInput" placeholder="What's your name?"
                         :class="{ 'error-input': nameError }" />
-                    <button @click="handleNameSubmit" :disabled="isSubmitting">Continue</button>
+                    <button @click="handleNameSubmit" :disabled="isSubmitting" ><UserCheck/></button>
                 </div>
                 <p v-if="nameError" class="error-text">{{ nameError }}</p>
             </div>
@@ -68,8 +68,12 @@
 </template>
 
 <script>
+import { UserCheck } from 'lucide-vue-next';
 export default {
     name: 'CommentsSection',
+    components: {
+        UserCheck
+    },
     data() {
         return {
             comments: [],
@@ -337,7 +341,7 @@ textarea {
 }
 
 button {
-    padding: 0.75rem 1.25rem;
+    padding: 10px;
     background-color: #10b981;
     color: #1a202c;
     border: none;

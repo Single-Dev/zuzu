@@ -92,7 +92,7 @@ const milestones = [
     { days: 3650, title: 'Ten Years' },
     { days: 7300, title: 'Twenty Years' },
     { days: 14600, title: 'Fourty Years' },
-    { days: 29200, title: 'Seventy Years' },
+    { days: 29200, title: 'Eighty Years' },
     { days: 58400, title: 'One hundred and Sixty Years' },
 ];
 

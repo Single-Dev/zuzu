@@ -64,12 +64,12 @@ export default {
             duration: 210, // Default duration in seconds (3:30)
             waveformBars: [],
             lyrics: [
-                { time: 0, text: "Birds of a feather, fly together" },
-                { time: 5, text: "We'll stay the same, no matter the weather" },
-                { time: 10, text: "You and I, we're birds of a feather" },
-                { time: 15, text: "We'll stick together, now and forever" },
-                { time: 20, text: "I know you've been broken, your wings have been stolen" },
-                { time: 25, text: "But we can keep floating, as long as we're hoping" },
+                { time: 0, text: "I want you to stay" },
+                { time: 5, text: "Till I'm in the grave" },
+                { time: 10, text: "Till I rot away, dead and buried" },
+                { time: 15, text: "Till I'm in the casket you carry" },
+                { time: 20, text: "If you go, I'm going too, uh" },
+                { time: 25, text: "Cause it was always you, alright" },
                 { time: 30, text: "The sky isn't falling, I hear your voice calling" },
                 { time: 35, text: "We'll rise above it all" },
                 { time: 40, text: "Birds of a feather, fly together" },
@@ -377,7 +377,7 @@ export default {
     }
     .karaoke-section{
         padding: 10px;
-        height: 250px;
+        height: 200px;
     }
     .player-controls{
         margin-left: auto;
