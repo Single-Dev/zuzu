@@ -384,6 +384,7 @@ export default {
 @media (max-width: 768px) {
     .audio-player {
         width: 300px;
+        height: 120vh;
     }
 
     .player-container {
