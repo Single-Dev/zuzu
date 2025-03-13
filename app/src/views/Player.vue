@@ -105,8 +105,8 @@ export default {
                 { time: 170, text: "I knew you in another life" },
                 { time: 175, text: "You had the same look in your eyes" },
                 { time: 180, text: "I love you, don't act so surprised" },
-                { time: 184, text: "Waaaw, you sing well :)" },
-                { time: 187, text: "I'm so proud of you 😎" },
+                { time: 184, text: "Happy birthday" },
+                { time: 187, text: "It's your day" },
                 { time: 191, text: "I wish long and happy life with me" },
                 { time: 195, text: "Be patient" },
                 { time: 197, text: "Be hardworking girl" },
@@ -185,7 +185,7 @@ export default {
 .audio-player {
     width: 900px;
     max-width: 1000px;
-    height: 100vh;
+    height: 106vh;
     margin: 0 auto;
     background-color: #0d1a2a;
     padding: 24px;
@@ -373,8 +373,8 @@ export default {
     font-size: 28px;
     font-weight: bold;
     opacity: 1;
-    color: #10b981;
-    text-shadow: 0 0 10px #10b981;
+    color:  #0019fe;
+    text-shadow: 0 0 10px  #0019fe    ;
 }
 
 .lyrics-container p.past {
@@ -406,7 +406,7 @@ export default {
     }
     .karaoke-section{
         padding: 10px;
-        height: 200px;
+        height: 230px;
     }
     .player-controls{
         margin-left: auto;

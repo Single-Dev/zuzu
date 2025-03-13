@@ -142,7 +142,8 @@
                         <div v-if="getRepliesForComment(comment.id).length > 0" class="replies"
                             :key="`replies-${comment.id}`">
                             <div v-for="reply in getRepliesForComment(comment.id)" :key="reply.id" class="reply"
-                                :id="`comment-${reply.id}`" :class="{ 'highlight': highlightedCommentId === reply.id }">
+                                :id="`comment-${reply.id}`" :class="{ 'highlight': highlightedCommentId === reply.id }"
+                                :style="{ backgroundColor: generateReplyColor(reply.name), borderLeftColor: generateAvatarColor(reply.name) }">
                                 <div class="comment-avatar reply-avatar"
                                     :style="{ backgroundColor: generateAvatarColor(reply.name) }">
                                     {{ reply.name.charAt(0).toUpperCase() }}
@@ -630,12 +631,42 @@ export default {
 
             // Use a color palette that matches the dark theme
             const colors = [
-                '#10b981', // emerald
-                '#3b82f6', // blue
-                '#8b5cf6', // violet
-                '#ec4899', // pink
-                '#f59e0b', // amber
-                '#ef4444', // red
+                '#10b981', 
+                '#3b82f6', 
+                '#8b5cf6', 
+                '#ec4899', 
+                '#f59e0b', 
+                '#ef4444', 
+                '#00f9fe', 
+                '#edfb00', 
+                '#0100fb',
+                '#fb0000',
+                '#2afb00'
+            ];
+
+            const index = Math.abs(hash) % colors.length;
+            return colors[index];
+        },
+        generateReplyColor(name) {
+            // Generate a consistent color based on the name
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) {
+                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            }
+
+            // Use a color palette that matches the dark theme
+            const colors = [
+                'rgba(16, 185, 129, 0.1)', 
+                'rgba(10, 29, 203, 0.1)', 
+                'rgba(129, 0, 143, 0.1)', 
+                'rgba(194, 3, 191, 0.1)', 
+                'rgba(208, 143, 4, 0.1)', 
+                'rgba(220, 5, 41, 0.1)', 
+                'rgba( 0, 249, 254, 0.1)', 
+                'rgba(237, 251, 0, 0.1)',
+                'rgba(1, 0, 251, 0.1)',
+                'rgba( 251, 0, 0, 0.1)',
+                'rgba( 42, 251, 0, 0.1)',
             ];
 
             const index = Math.abs(hash) % colors.length;
@@ -659,6 +690,7 @@ export default {
     display: block !important;
     transition: 1s all;
     /* Prevent horizontal scrolling */
+    color:#dfe0db;
 }
 
 .comments-header {
@@ -1150,9 +1182,9 @@ button:disabled {
     display: flex;
     padding: 0.75rem;
     margin-bottom: 0.5rem;
-    border-left: 4px solid #10b981;
+    border-left: 4px solid ;
     border-radius: 4px;
-    background-color: rgba(16, 185, 129, 0.1);
+    /* background-color: rgba(16, 185, 129, 0.1); */
     border-radius: 6px;
     width: 100%;
     box-sizing: border-box;
