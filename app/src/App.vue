@@ -417,6 +417,7 @@ div {
     right: 10px;
     left: 10px;
     max-width: none;
+    z-index: 1;
   }
 }
 </style>
