@@ -373,8 +373,8 @@ export default {
     font-size: 28px;
     font-weight: bold;
     opacity: 1;
-    color:  #0019fe;
-    text-shadow: 0 0 10px  #0019fe    ;
+    color:#0019fe;
+    text-shadow: 0 0 10px  #0019fe;
 }
 
 .lyrics-container p.past {
@@ -384,7 +384,7 @@ export default {
 @media (max-width: 768px) {
     .audio-player {
         width: 300px;
-        height: 120vh;
+        height: 150vh;
     }
 
     .player-container {
