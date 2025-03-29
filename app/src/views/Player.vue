@@ -16,6 +16,7 @@
                     <div class="title-section">
                         <h2>BIRDS OF A FEATHER</h2>
                         <p>Billie Eilish</p>
+                        <span>Created by <a href="https://instagram.com/beckzodiy"><b>Beckzodiy</b></a></span>
                     </div>
 
                 </div>
@@ -34,7 +35,7 @@
                     </div>
                 </div>
                 <div class="time-display">
-                    {{ formatTime(currentTime) }}-{{ formatTime(duration) }}
+                    {{ formatTime(currentTime) }} - {{ formatTime(duration) }}
                 </div>
             </div>
         </div>

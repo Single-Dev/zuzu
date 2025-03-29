@@ -41,7 +41,7 @@ export default {
       pollingInterval: null,
       userName: '',
       lastCheckTime: null,
-      notificationDuration: 6000 // 5 seconds before auto-dismiss
+      notificationDuration: 12000 // auto-dismiss
     }
   },
   created() {
@@ -416,7 +416,7 @@ div {
     bottom: 10px;
     right: 10px;
     left: 10px;
-    max-width: none;
+    /* max-width: none; */
     display: none;
   }
 }
