@@ -458,7 +458,7 @@ export default {
             // Poll for new comments every 1 second
             this.pollingInterval = setInterval(() => {
                 this.checkForNewComments()
-            }, 1000)
+            }, 3000)
         },
 
         stopRealTimeUpdates() {

@@ -81,7 +81,7 @@ export default {
       // Poll for new comments every seconds
       this.pollingInterval = setInterval(() => {
         this.checkForNewNotifications();
-      }, 1000);
+      }, 10000);
     },
     
     stopNotificationPolling() {
